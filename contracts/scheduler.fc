@@ -17,7 +17,7 @@ const int const::bounty_value = 25000000;
         int value = in_msg_body'~load_coins();
 
         msg_value -= const::bounty_value + value;
-        set_gas_limit(msg_value / 1000000);
+        set_gas_limit(msg_value / 1000);
 
         randomize_lt();
         cell dict = get_data();
@@ -31,7 +31,39 @@ const int const::bounty_value = 25000000;
 }
 
 () recv_external (slice in_msg) impure {
-    slice bounty = in_msg~load_msg_addr();
+    slice bounty_address = in_msg;
+    cell dict = get_data();
+    (int time, slice message, int f?) = dict~udict::delete_get_min(96);
+
+    throw_unless(702, now() >= time);
+    accept_message();
+
+    slice recipient = message~load_msg_addr();
+    int value = message~load_coins();
+    cell body = message~load_maybe_ref();
+    cell init = message~load_maybe_ref();
+    
+    builder msg = begin_cell()
+        .store_uint(0x10, 6)
+        .store_slice(recipient)
+        .store_coins(value)
+        .store_uint(7, 108);
+    if (~ cell_null?(init)) {
+        msg~store_uint(1, 1);
+    }
+    send_raw_message(msg
+        .store_maybe_ref(init)
+        .store_maybe_ref(body)
+    .end_cell(), 0);
+
+    send_raw_message(begin_cell()
+        .store_uint(0x10, 6)
+        .store_slice(bounty_address)
+        .store_coins(const::bounty_value)
+        .store_uint(0, 107)
+    .end_cell(), 0);
+
+    set_data(dict);
 }
 
 (int, slice, int, cell, cell) get_next_message () method_id {

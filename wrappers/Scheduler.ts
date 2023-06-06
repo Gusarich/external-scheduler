@@ -51,6 +51,10 @@ export class Scheduler implements Contract {
         });
     }
 
+    async sendTryProcess(provider: ContractProvider, bountyAddress: Address) {
+        await provider.external(beginCell().storeAddress(bountyAddress).endCell());
+    }
+
     async getNextMessage(provider: ContractProvider) {
         const result = (await provider.get('get_next_message', [])).stack;
         return [
