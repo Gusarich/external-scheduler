@@ -1,4 +1,4 @@
-#_ recipient:MsgAddressInt value:Coins body:^Cell init:(Maybe ^Cell) = ScheduledMessage;
+#_ recipient:MsgAddressInt value:Coins body:(Maybe ^Cell) init:(Maybe ^Cell) = ScheduledMessage;
 #_ messages:(HashmapE 96 ScheduledMessage) = Storage;
 schedule#55b736bf time:uint32 message:ScheduledMessage = InternalMsgBody;
 #_ bounty:MsgAddressInt = ExternalMsgBody;

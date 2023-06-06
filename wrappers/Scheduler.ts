@@ -26,4 +26,28 @@ export class Scheduler implements Contract {
             body: beginCell().endCell(),
         });
     }
+
+    async sendSchedule(
+        provider: ContractProvider,
+        via: Sender,
+        value: bigint,
+        time: bigint,
+        msgRecipient: Address,
+        msgValue: bigint,
+        msgBody?: Cell,
+        msgInit?: Cell
+    ) {
+        await provider.internal(via, {
+            value,
+            sendMode: SendMode.PAY_GAS_SEPARATELY,
+            body: beginCell()
+                .storeUint(0x55b736bf, 32)
+                .storeUint(time, 32)
+                .storeAddress(msgRecipient)
+                .storeCoins(msgValue)
+                .storeMaybeRef(msgBody)
+                .storeMaybeRef(msgInit)
+                .endCell(),
+        });
+    }
 }
