@@ -20,20 +20,21 @@ const int const::bounty_value = 25000000;
         set_gas_limit(msg_value / 1000);
 
         randomize_lt();
-        cell dict = get_data();
+        cell dict = get_data().begin_parse().preload_dict();
         dict~udict_set(
             96,
-            time << 64 + rand(18446744073709551616),
+            (time << 64) + rand(18446744073709551616),
             in_msg_body
         );
-        set_data(dict);
+        set_data(begin_cell().store_dict(dict).end_cell());
     }
 }
 
 () recv_external (slice in_msg) impure {
     slice bounty_address = in_msg;
-    cell dict = get_data();
+    cell dict = get_data().begin_parse().preload_dict();
     (int time, slice message, int f?) = dict~udict::delete_get_min(96);
+    time = time >> 64;
 
     throw_unless(702, now() >= time);
     accept_message();
@@ -42,34 +43,34 @@ const int const::bounty_value = 25000000;
     int value = message~load_coins();
     cell body = message~load_maybe_ref();
     cell init = message~load_maybe_ref();
-    
+
     builder msg = begin_cell()
         .store_uint(0x10, 6)
         .store_slice(recipient)
         .store_coins(value)
-        .store_uint(7, 108);
+        .store_uint(0, 105);
     if (~ cell_null?(init)) {
         msg~store_uint(1, 1);
     }
     send_raw_message(msg
         .store_maybe_ref(init)
         .store_maybe_ref(body)
-    .end_cell(), 0);
+    .end_cell(), 2);
 
     send_raw_message(begin_cell()
         .store_uint(0x10, 6)
         .store_slice(bounty_address)
         .store_coins(const::bounty_value)
         .store_uint(0, 107)
-    .end_cell(), 0);
+    .end_cell(), 2);
 
-    set_data(dict);
+    set_data(begin_cell().store_dict(dict).end_cell());
 }
 
 (int, slice, int, cell, cell) get_next_message () method_id {
-    (int time, slice message, int f?) = get_data().udict_get_min?(96);
+    (int time, slice message, int f?) = get_data().begin_parse().preload_dict().udict_get_min?(96);
     if (f?) {
-        return (time, message~load_msg_addr(), message~load_coins(), message~load_maybe_ref(), message~load_maybe_ref());
+        return (time >> 64, message~load_msg_addr(), message~load_coins(), message~load_maybe_ref(), message~load_maybe_ref());
     }
     return (null(), null(), null(), null(), null());
 }

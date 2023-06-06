@@ -3,7 +3,7 @@ import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, 
 export type SchedulerConfig = {};
 
 export function schedulerConfigToCell(config: SchedulerConfig): Cell {
-    return beginCell().endCell();
+    return beginCell().storeUint(0, 1).endCell();
 }
 
 export class Scheduler implements Contract {
@@ -58,9 +58,9 @@ export class Scheduler implements Contract {
     async getNextMessage(provider: ContractProvider) {
         const result = (await provider.get('get_next_message', [])).stack;
         return [
-            result.readBigNumber(),
-            result.readAddress(),
-            result.readBigNumber(),
+            result.readBigNumberOpt(),
+            result.readAddressOpt(),
+            result.readBigNumberOpt(),
             result.readCellOpt(),
             result.readCellOpt(),
         ];
