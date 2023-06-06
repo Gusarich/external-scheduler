@@ -1,9 +1,35 @@
 #include "imports/stdlib.fc";
 
-() recv_internal (int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
+const int op::schedule = 0x55b736bf;
+const int const::bounty_value = 25000000;
 
+() recv_internal (int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
+    if (in_msg_body.slice_bits() < 32) {
+        return ();
+    }
+    
+    int op = in_msg_body~load_uint(32);
+    
+    if (op == op::schedule) {
+        int time = in_msg_body~load_uint(32);
+        slice in_msg_body' = in_msg_body;
+        in_msg_body'~load_msg_addr();
+        int value = in_msg_body'~load_coins();
+
+        msg_value -= const::bounty_value + value;
+        set_gas_limit(msg_value / 1000000);
+
+        randomize_lt();
+        cell dict = get_data();
+        dict~udict_set(
+            96,
+            time << 64 + rand(18446744073709551616),
+            in_msg_body
+        );
+        set_data(dict);
+    }
 }
 
 () recv_external (slice in_msg) impure {
-    
+    slice bounty = in_msg~load_msg_addr();
 }
