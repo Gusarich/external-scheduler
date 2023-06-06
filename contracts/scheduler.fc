@@ -7,7 +7,7 @@ const int const::bounty_value = 25000000;
     if (in_msg_body.slice_bits() < 32) {
         return ();
     }
-    
+
     int op = in_msg_body~load_uint(32);
     
     if (op == op::schedule) {
@@ -32,4 +32,12 @@ const int const::bounty_value = 25000000;
 
 () recv_external (slice in_msg) impure {
     slice bounty = in_msg~load_msg_addr();
+}
+
+(int, slice, int, cell, cell) get_next_message () method_id {
+    (int time, slice message, int f?) = get_data().udict_get_min?(96);
+    if (f?) {
+        return (time, message~load_msg_addr(), message~load_coins(), message~load_maybe_ref(), message~load_maybe_ref());
+    }
+    return (null(), null(), null(), null(), null());
 }

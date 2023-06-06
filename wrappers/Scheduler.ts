@@ -50,4 +50,15 @@ export class Scheduler implements Contract {
                 .endCell(),
         });
     }
+
+    async getNextMessage(provider: ContractProvider) {
+        const result = (await provider.get('get_next_message', [])).stack;
+        return [
+            result.readBigNumber(),
+            result.readAddress(),
+            result.readBigNumber(),
+            result.readCellOpt(),
+            result.readCellOpt(),
+        ];
+    }
 }
