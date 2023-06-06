@@ -1,0 +1,3 @@
+schedule time:uint32 recipient:MsgAddressInt value:Coins body:^Cell init:(Maybe ^Cell) = InternalMsgBody;
+
+#_ bounty:MsgAddressInt = ExternalMsgBody;
