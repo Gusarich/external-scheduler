@@ -114,65 +114,71 @@ describe('Scheduler', () => {
         expect(message!.init?.data).toEqualCell(Cell.EMPTY);
     });
 
-    // it('should schedule and process single message', async () => {
-    //     await scheduler.sendSchedule(wallet.getSender(), toNano('0.1'), 1005n, recipient, toNano('0.01'));
+    it('should schedule and process single message', async () => {
+        await scheduler.sendSchedule(wallet.getSender(), toNano('0.1'), 1005n, {
+            dest: recipient,
+            value: toNano('0.01'),
+            body: Cell.EMPTY,
+        });
 
-    //     blockchain.now = 1005;
+        blockchain.now = 1005;
 
-    //     let result = await scheduler.sendTryProcess(bounty);
-    //     expect(result.transactions).toHaveTransaction({
-    //         from: scheduler.address,
-    //         to: bounty,
-    //         value: toNano('0.024'),
-    //     });
+        let result = await scheduler.sendTryProcess(bounty);
+        expect(result.transactions).toHaveTransaction({
+            from: scheduler.address,
+            to: bounty,
+            value: toNano('0.024'),
+        });
 
-    //     let msg = await scheduler.getNextMessage();
-    //     expect(msg).toEqual([null, null, null, null, null]);
-    // });
+        let msg = await scheduler.getNextMessage();
+        expect(msg).toEqual([null, null]);
+    });
 
-    // it('should schedule and process several messages', async () => {
-    //     await scheduler.sendSchedule(wallet.getSender(), toNano('0.1'), 1005n, recipient, toNano('0.01'));
-    //     await scheduler.sendSchedule(
-    //         wallet.getSender(),
-    //         toNano('0.1'),
-    //         1004n,
-    //         recipient,
-    //         toNano('0.02'),
-    //         beginCell().storeStringTail('Hello, world!').endCell()
-    //     );
-    //     await scheduler.sendSchedule(
-    //         wallet.getSender(),
-    //         toNano('0.1'),
-    //         1003n,
-    //         recipient,
-    //         toNano('0.03'),
-    //         beginCell().storeStringTail('Hello, world!').endCell(),
-    //         Cell.EMPTY
-    //     );
-    //     blockchain.now = 1005;
+    it('should schedule and process several messages', async () => {
+        await scheduler.sendSchedule(wallet.getSender(), toNano('0.1'), 1005n, {
+            dest: recipient,
+            value: toNano('0.01'),
+            body: Cell.EMPTY,
+        });
+        await scheduler.sendSchedule(wallet.getSender(), toNano('0.1'), 1004n, {
+            dest: recipient,
+            value: toNano('0.02'),
+            body: beginCell().storeStringTail('Hello, world!').endCell(),
+        });
+        await scheduler.sendSchedule(wallet.getSender(), toNano('0.1'), 1003n, {
+            dest: recipient,
+            value: toNano('0.03'),
+            body: beginCell().storeStringTail('Hello, world!').endCell(),
+            init: {
+                code: Cell.EMPTY,
+                data: Cell.EMPTY,
+            },
+        });
 
-    //     let result = await scheduler.sendTryProcess(bounty);
-    //     expect(result.transactions).toHaveTransaction({
-    //         from: scheduler.address,
-    //         to: bounty,
-    //         value: toNano('0.024'),
-    //     });
+        blockchain.now = 1005;
 
-    //     result = await scheduler.sendTryProcess(bounty);
-    //     expect(result.transactions).toHaveTransaction({
-    //         from: scheduler.address,
-    //         to: bounty,
-    //         value: toNano('0.024'),
-    //     });
+        let result = await scheduler.sendTryProcess(bounty);
+        expect(result.transactions).toHaveTransaction({
+            from: scheduler.address,
+            to: bounty,
+            value: toNano('0.024'),
+        });
 
-    //     result = await scheduler.sendTryProcess(bounty);
-    //     expect(result.transactions).toHaveTransaction({
-    //         from: scheduler.address,
-    //         to: bounty,
-    //         value: toNano('0.024'),
-    //     });
+        result = await scheduler.sendTryProcess(bounty);
+        expect(result.transactions).toHaveTransaction({
+            from: scheduler.address,
+            to: bounty,
+            value: toNano('0.024'),
+        });
 
-    //     let msg = await scheduler.getNextMessage();
-    //     expect(msg).toEqual([null, null, null, null, null]);
-    // });
+        result = await scheduler.sendTryProcess(bounty);
+        expect(result.transactions).toHaveTransaction({
+            from: scheduler.address,
+            to: bounty,
+            value: toNano('0.024'),
+        });
+
+        let msg = await scheduler.getNextMessage();
+        expect(msg).toEqual([null, null]);
+    });
 });

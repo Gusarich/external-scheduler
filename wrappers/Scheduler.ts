@@ -10,7 +10,6 @@ import {
     SendMode,
     StateInit,
     storeMessage,
-    storeMessageRelaxed,
 } from 'ton-core';
 
 export type SchedulerConfig = {};
